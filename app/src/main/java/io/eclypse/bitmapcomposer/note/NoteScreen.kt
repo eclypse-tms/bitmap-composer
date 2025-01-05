@@ -105,7 +105,7 @@ fun NoteScreen(
                                     composableView = {
                                         val readyForScreenshotState =
                                             noteViewState.copy(renderForScreenCapture = true)
-                                        val composableContent = BitmapComposerTheme {
+                                        BitmapComposerTheme {
                                             NoteScreen(
                                                 noteViewState = readyForScreenshotState,
                                                 onDeleteAttachment = { },
@@ -305,6 +305,7 @@ private fun RenderNoteInfoSection(
 
         HorizontalDivider(Modifier.padding(start = Dimensions.standardPadding))
 
+        // overscroll
         Spacer(
             modifier =
             Modifier
@@ -365,12 +366,6 @@ private fun RenderAttachMediaSection(
         maxAttachmentSectionHeight = 600.dp
     }
 
-    if (noteViewState.showInteractiveElements) {
-        // the first entry in the media urls is always empty because we are using
-        // that as a placeholder for attach media button when in edit mode
-        AddMediaButton(onClick = onAttachNewPhoto)
-    }
-
     if (noteViewState.renderForScreenCapture) {
         // when rendering for the screenshot - we want the images to take up the entire width
         Column {
@@ -393,6 +388,14 @@ private fun RenderAttachMediaSection(
                 .fillMaxWidth()
                 .heightIn(0.dp, maxAttachmentSectionHeight),
         ) {
+            item(key = "addMediaButton") {
+                if (noteViewState.showInteractiveElements) {
+                    // the first entry in the media urls is always empty because we are using
+                    // that as a placeholder for attach media button when in edit mode
+                    AddMediaButton(onClick = onAttachNewPhoto)
+                }
+            }
+
             itemsIndexed(noteViewState.attachments) { index, attachment ->
                 Thumbnail(
                     modifier = thumbNailModifier,
@@ -406,7 +409,7 @@ private fun RenderAttachMediaSection(
     }
 }
 
-@Preview(heightDp = 1200)
+@Preview(heightDp = 2000)
 @Composable
 fun AddNoteScreenPreview() {
 
@@ -418,9 +421,9 @@ fun AddNoteScreenPreview() {
             initialStateConfigured = true,
             noteId = UUID.randomUUID().toString(),
             noteBody = noteBody,
-            rating = null,
+            rating = Rating.THREE_STAR,
             isInEditMode = true,
-            renderForScreenCapture = false,
+            renderForScreenCapture = true,
             coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
             associatedField = null,
             attachments = listOf(
