@@ -1,4 +1,4 @@
-package io.eclypse.bitmapcomposer.ui
+package io.eclypse.bitmapcomposer.note
 
 enum class PictureMode {
     URL,

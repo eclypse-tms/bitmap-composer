@@ -1,4 +1,4 @@
-package io.eclypse.bitmapcomposer.ui
+package io.eclypse.bitmapcomposer.note
 
 import android.net.Uri
 import androidx.compose.foundation.Image

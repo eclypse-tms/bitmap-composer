@@ -1,6 +1,6 @@
-package io.eclypse.bitmapcomposer.ui
+package io.eclypse.bitmapcomposer.note
 
-data class AddNoteViewState(
+data class NoteViewState(
     val noteId: String,
 
     val noteTitle: String = "",

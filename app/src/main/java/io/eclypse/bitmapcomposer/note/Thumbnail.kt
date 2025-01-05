@@ -1,4 +1,4 @@
-package io.eclypse.bitmapcomposer.ui
+package io.eclypse.bitmapcomposer.note
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth

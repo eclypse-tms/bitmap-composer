@@ -1,4 +1,4 @@
-package io.eclypse.bitmapcomposer.ui
+package io.eclypse.bitmapcomposer.note
 
 import android.app.Activity
 import io.eclypse.bitmapcomposer.ui.theme.Emphasis
@@ -22,7 +22,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +39,7 @@ import androidx.compose.material3.carousel.CarouselState
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -68,8 +68,8 @@ import java.util.UUID
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNoteContents(
-    addNoteViewState: AddNoteViewState,
+fun NoteScreen(
+    noteViewState: NoteViewState,
     onChangeNoteTitle: (String) -> Unit,
     onChangeNoteContents: (String) -> Unit,
     onDeleteAttachment: (Int) -> Unit,
@@ -99,15 +99,15 @@ fun AddNoteContents(
                     IconButton(
                         onClick = {
                             compositionCoroutineScope.launch {
-                                Screenshot(
+                                val screenshot = Screenshot(
                                     currentActivity = currentContext as Activity,
                                     screenDensity = screenDensity,
                                     composableView = {
                                         val readyForScreenshotState =
-                                            addNoteViewState.copy(renderForScreenCapture = true)
-                                        BitmapComposerTheme {
-                                            AddNoteContents(
-                                                addNoteViewState = readyForScreenshotState,
+                                            noteViewState.copy(renderForScreenCapture = true)
+                                        val composableContent = BitmapComposerTheme {
+                                            NoteScreen(
+                                                noteViewState = readyForScreenshotState,
                                                 onDeleteAttachment = { },
                                                 onSelectGrowthStage = { },
                                                 onAttachNewPhoto = { },
@@ -118,6 +118,8 @@ fun AddNoteContents(
                                             )
                                         }
                                     })
+
+                                onShareNote(screenshot)
                             }
                         },
                     ) {
@@ -136,16 +138,16 @@ fun AddNoteContents(
                 .background(Color.White)
                 .then(modifier),
         ) {
-            if (!addNoteViewState.renderForScreenCapture) {
+            if (!noteViewState.renderForScreenCapture) {
                 // only show the carousel when we are rendering for the normal view
-                RenderCarouselSection(addNoteViewState = addNoteViewState)
+                RenderCarouselSection(noteViewState = noteViewState)
             }
 
             Column(modifier = Modifier.padding(Dimensions.standardPadding)) {
 
                 ListItemHeader("Title")
                 TextField(
-                    value = addNoteViewState.noteTitle,
+                    value = noteViewState.noteTitle,
                     onValueChange = onChangeNoteTitle,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -160,7 +162,7 @@ fun AddNoteContents(
                 TextField(
                     modifier = Modifier.heightIn(min = 80.dp)
                         .fillMaxWidth(),
-                    value = addNoteViewState.noteBody,
+                    value = noteViewState.noteBody,
                     onValueChange = onChangeNoteContents,
                 )
 
@@ -172,8 +174,8 @@ fun AddNoteContents(
                 )
 
                 RenderAttachMediaSection(
-                    renderForScreenshot = addNoteViewState.renderForScreenCapture,
-                    addNoteViewState = addNoteViewState,
+                    renderForScreenshot = noteViewState.renderForScreenCapture,
+                    noteViewState = noteViewState,
                     onAttachNewPhoto = onAttachNewPhoto,
                     onDeleteAttachment = onDeleteAttachment,
                 )
@@ -186,7 +188,7 @@ fun AddNoteContents(
                 )
 
                 RenderRatingSection(
-                    addNoteViewState = addNoteViewState,
+                    noteViewState = noteViewState,
                     onSelectRating = onSelectGrowthStage,
                 )
 
@@ -201,7 +203,7 @@ fun AddNoteContents(
             )
 
             RenderNoteInfoSection(
-                addNoteViewState = addNoteViewState,
+                noteViewState = noteViewState,
                 onRequestToSelectCoordinates = onRequestToSelectNoteLocation,
             )
         }
@@ -211,7 +213,7 @@ fun AddNoteContents(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RenderCarouselSection(
-    addNoteViewState: AddNoteViewState,
+    noteViewState: NoteViewState,
 ) {
     val currentConfiguration = LocalConfiguration.current
 
@@ -219,7 +221,7 @@ private fun RenderCarouselSection(
     // to update itself automatically every time the number of attachments changes
     val carouselState =
         CarouselState {
-            addNoteViewState.attachments.count()
+            noteViewState.attachments.count()
         }
 
     HorizontalUncontainedCarousel(
@@ -229,7 +231,7 @@ private fun RenderCarouselSection(
         itemSpacing = 8.dp,
         flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(carouselState),
     ) { index ->
-        NoteCarouselItem(attachment = addNoteViewState.attachments[index])
+        NoteCarouselItem(attachment = noteViewState.attachments[index])
     }
 
     Spacer(
@@ -243,7 +245,7 @@ private fun RenderCarouselSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-        val totalNumberOfImagesInCarousel = addNoteViewState.attachments.size
+        val totalNumberOfImagesInCarousel = noteViewState.attachments.size
         for (index in 0 until totalNumberOfImagesInCarousel) {
             Box(
                 modifier =
@@ -260,7 +262,7 @@ private fun RenderCarouselSection(
 
 @Composable
 private fun RenderNoteInfoSection(
-    addNoteViewState: AddNoteViewState,
+    noteViewState: NoteViewState,
     onRequestToSelectCoordinates: (Coordinate2d?) -> Unit,
 ) {
     Column {
@@ -269,15 +271,15 @@ private fun RenderNoteInfoSection(
         HorizontalDivider(Modifier.padding(start = Dimensions.standardPadding))
 
         val trailingIcon: ImageVector? =
-            if (addNoteViewState.isInEditMode) {
+            if (noteViewState.isInEditMode) {
                 Icons.AutoMirrored.Default.KeyboardArrowRight
             } else {
                 null
             }
 
         val coordinateSelectionItemClick: ((Int) -> Unit)? =
-            if (addNoteViewState.isInEditMode) {
-                { onRequestToSelectCoordinates(addNoteViewState.coordinate) }
+            if (noteViewState.isInEditMode) {
+                { onRequestToSelectCoordinates(noteViewState.coordinate) }
             } else {
                 null
             }
@@ -285,7 +287,7 @@ private fun RenderNoteInfoSection(
         ListItemType1(
             itemId = 1,
             headlineText = "Location",
-            trailingText = addNoteViewState.coordinate?.prettyPrinted() ?: "n/a",
+            trailingText = noteViewState.coordinate?.prettyPrinted() ?: "n/a",
             trailingIcon = trailingIcon,
             emphasis = setOf(Emphasis.LeadingContent),
             itemClick = coordinateSelectionItemClick,
@@ -293,6 +295,15 @@ private fun RenderNoteInfoSection(
 
         HorizontalDivider(Modifier.padding(start = Dimensions.standardPadding))
 
+        ListItemType1(
+            itemId = 1,
+            headlineText = "Author",
+            trailingText = "Robert Frost",
+            emphasis = setOf(Emphasis.LeadingContent),
+            itemClick = coordinateSelectionItemClick,
+        )
+
+        HorizontalDivider(Modifier.padding(start = Dimensions.standardPadding))
 
         Spacer(
             modifier =
@@ -305,30 +316,35 @@ private fun RenderNoteInfoSection(
 
 @Composable
 private fun RenderRatingSection(
-    addNoteViewState: AddNoteViewState,
+    noteViewState: NoteViewState,
     onSelectRating: (Rating) -> Unit,
 ) {
     ListItemHeader("Rating")
 
-    Row(Modifier.selectableGroup()) {
+    Row(Modifier.selectableGroup(),
+            verticalAlignment = Alignment.CenterVertically,) {
+        Text("1   ")
         for (eachRating in Rating.entries) {
+            val shouldBeSelected = (noteViewState.rating?.ordinal ?: -1) >= eachRating.ordinal
+
             RadioButton(
-                selected = addNoteViewState.rating == eachRating,
+                selected = shouldBeSelected,
                 onClick = { onSelectRating(eachRating) },
-                enabled = addNoteViewState.isInEditMode,
+                enabled = noteViewState.isInEditMode,
                 colors = RadioButtonDefaults.colors(
                     selectedColor = Purple40,
                 ),
                 modifier = Modifier.semantics { contentDescription = "Localized Description" }
             )
         }
+        Text("   5")
     }
 }
 
 @Composable
 private fun RenderAttachMediaSection(
     renderForScreenshot: Boolean,
-    addNoteViewState: AddNoteViewState,
+    noteViewState: NoteViewState,
     onAttachNewPhoto: () -> Unit,
     onDeleteAttachment: (Int) -> Unit,
 ) {
@@ -349,21 +365,21 @@ private fun RenderAttachMediaSection(
         maxAttachmentSectionHeight = 600.dp
     }
 
-    if (addNoteViewState.showInteractiveElements) {
+    if (noteViewState.showInteractiveElements) {
         // the first entry in the media urls is always empty because we are using
         // that as a placeholder for attach media button when in edit mode
         AddMediaButton(onClick = onAttachNewPhoto)
     }
 
-    if (addNoteViewState.renderForScreenCapture) {
+    if (noteViewState.renderForScreenCapture) {
         // when rendering for the screenshot - we want the images to take up the entire width
         Column {
-            addNoteViewState.attachments.forEachIndexed { index, attachment ->
+            noteViewState.attachments.forEachIndexed { index, attachment ->
                 Thumbnail(
                     modifier = thumbNailModifier,
                     index = index,
                     imageReference = attachment,
-                    isDeletable = addNoteViewState.canDeleteAttachedMedia,
+                    isDeletable = noteViewState.canDeleteAttachedMedia,
                     onDeleteAttachment = onDeleteAttachment,
                 )
             }
@@ -377,12 +393,12 @@ private fun RenderAttachMediaSection(
                 .fillMaxWidth()
                 .heightIn(0.dp, maxAttachmentSectionHeight),
         ) {
-            itemsIndexed(addNoteViewState.attachments) { index, attachment ->
+            itemsIndexed(noteViewState.attachments) { index, attachment ->
                 Thumbnail(
                     modifier = thumbNailModifier,
                     index = index,
                     imageReference = attachment,
-                    isDeletable = addNoteViewState.canDeleteAttachedMedia,
+                    isDeletable = noteViewState.canDeleteAttachedMedia,
                     onDeleteAttachment = onDeleteAttachment,
                 )
             }
@@ -397,15 +413,15 @@ fun AddNoteScreenPreview() {
     val noteBody = "The Milky Way is a huge collection of stars, dust and gas."
 
     val previewNote =
-        AddNoteViewState(
+        NoteViewState(
             noteTitle = "Milky Way Galaxy",
             initialStateConfigured = true,
             noteId = UUID.randomUUID().toString(),
             noteBody = noteBody,
-            rating = Rating.THREE_STAR,
+            rating = null,
             isInEditMode = true,
             renderForScreenCapture = false,
-            coordinate = Coordinate2d(latitude = 41.984818, longitude = -93.65372),
+            coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
             associatedField = null,
             attachments = listOf(
                 ImageReference.ByDrawable(R.drawable.forest),
@@ -415,8 +431,8 @@ fun AddNoteScreenPreview() {
         )
 
     BitmapComposerTheme {
-        AddNoteContents(
-            addNoteViewState = previewNote,
+        NoteScreen(
+            noteViewState = previewNote,
             onChangeNoteTitle = {},
             onChangeNoteContents = {},
             onDeleteAttachment = {},
