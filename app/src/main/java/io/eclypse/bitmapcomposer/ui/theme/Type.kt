@@ -1,34 +1,25 @@
 package io.eclypse.bitmapcomposer.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+// Default Material 3 typography values
+val baseline = Typography()
+
+val Typography = Typography (
+    displayLarge = baseline.displayLarge,
+    displayMedium = baseline.displayMedium,
+    displaySmall = baseline.displaySmall,
+    headlineLarge = baseline.headlineLarge,
+    headlineMedium = baseline.headlineMedium,
+    headlineSmall = baseline.headlineSmall,
+    titleLarge = baseline.titleLarge,
+    titleMedium = baseline.titleMedium,
+    titleSmall = baseline.titleSmall,
+    bodyLarge = baseline.bodyLarge,
+    bodyMedium = baseline.bodyMedium,
+    bodySmall = baseline.bodySmall,
+    labelLarge = baseline.labelLarge,
+    labelMedium = baseline.labelMedium,
+    labelSmall = baseline.labelSmall,
 )
