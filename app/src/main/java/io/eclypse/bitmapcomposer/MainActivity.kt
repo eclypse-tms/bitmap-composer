@@ -10,10 +10,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.eclypse.bitmapcomposer.note.BitmapComposer
-import io.eclypse.bitmapcomposer.note.NoteScreen
-import io.eclypse.bitmapcomposer.note.NoteViewState
 import io.eclypse.bitmapcomposer.note.Coordinate2d
 import io.eclypse.bitmapcomposer.note.ImageReference
+import io.eclypse.bitmapcomposer.note.NoteScreen
+import io.eclypse.bitmapcomposer.note.NoteViewState
 import io.eclypse.bitmapcomposer.note.Rating
 import io.eclypse.bitmapcomposer.note.Screenshot
 import io.eclypse.bitmapcomposer.note.ShareNote

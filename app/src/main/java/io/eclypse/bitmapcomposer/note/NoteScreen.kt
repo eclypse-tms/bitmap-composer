@@ -1,7 +1,6 @@
 package io.eclypse.bitmapcomposer.note
 
 import android.app.Activity
-import io.eclypse.bitmapcomposer.ui.theme.Emphasis
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import io.eclypse.bitmapcomposer.R
 import io.eclypse.bitmapcomposer.ui.theme.BitmapComposerTheme
 import io.eclypse.bitmapcomposer.ui.theme.Dimensions
+import io.eclypse.bitmapcomposer.ui.theme.Emphasis
 import io.eclypse.bitmapcomposer.ui.theme.ListItemHeader
 import io.eclypse.bitmapcomposer.ui.theme.ListItemType1
 import io.eclypse.bitmapcomposer.ui.theme.ListItemType2
@@ -63,9 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-/**
- * State hoisted Add or Edit Note Screen
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(
@@ -87,6 +85,7 @@ fun NoteScreen(
     val compositionCoroutineScope: CoroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -106,7 +105,7 @@ fun NoteScreen(
                                         val readyForScreenshotState =
                                             noteViewState.copy(renderForScreenCapture = true)
                                         BitmapComposerTheme {
-                                            NoteScreen(
+                                            NoteContents(
                                                 noteViewState = readyForScreenshotState,
                                                 onDeleteAttachment = { },
                                                 onSelectGrowthStage = { },
@@ -114,7 +113,6 @@ fun NoteScreen(
                                                 onRequestToSelectNoteLocation = { },
                                                 onChangeNoteTitle = { },
                                                 onChangeNoteContents = { },
-                                                onShareNote = { },
                                             )
                                         }
                                     })
@@ -129,84 +127,107 @@ fun NoteScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier =
-            Modifier
-                .padding(innerPadding)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .background(Color.White)
-                .then(modifier),
-        ) {
-            if (!noteViewState.renderForScreenCapture) {
-                // only show the carousel when we are rendering for the normal view
-                RenderCarouselSection(noteViewState = noteViewState)
-            }
+        NoteContents(
+            modifier = Modifier.padding(innerPadding),
+            noteViewState = noteViewState,
+            onChangeNoteTitle = onChangeNoteTitle,
+            onChangeNoteContents = onChangeNoteContents,
+            onDeleteAttachment = onDeleteAttachment,
+            onSelectGrowthStage = onSelectGrowthStage,
+            onAttachNewPhoto = onAttachNewPhoto,
+            onRequestToSelectNoteLocation = onRequestToSelectNoteLocation,
+        )
+    }
+}
 
-            Column(modifier = Modifier.padding(Dimensions.standardPadding)) {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NoteContents(
+    noteViewState: NoteViewState,
+    onChangeNoteTitle: (String) -> Unit,
+    onChangeNoteContents: (String) -> Unit,
+    onDeleteAttachment: (Int) -> Unit,
+    onSelectGrowthStage: (Rating?) -> Unit,
+    onAttachNewPhoto: () -> Unit,
+    onRequestToSelectNoteLocation: (Coordinate2d?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .background(Color.White)
+            .then(modifier),
+    ) {
+        if (!noteViewState.renderForScreenCapture) {
+            // only show the carousel when we are rendering for the normal view
+            RenderCarouselSection(noteViewState = noteViewState)
+        }
 
-                ListItemHeader("Title")
-                TextField(
-                    value = noteViewState.noteTitle,
-                    onValueChange = onChangeNoteTitle,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+        Column(modifier = Modifier.padding(Dimensions.standardPadding)) {
 
-                Spacer(
-                    modifier = Modifier
-                        .height(Dimensions.halfPadding)
-                )
+            ListItemHeader("Title")
+            TextField(
+                value = noteViewState.noteTitle,
+                onValueChange = onChangeNoteTitle,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-                ListItemHeader("Contents")
+            Spacer(
+                modifier = Modifier
+                    .height(Dimensions.halfPadding)
+            )
 
-                TextField(
-                    modifier = Modifier.heightIn(min = 80.dp)
-                        .fillMaxWidth(),
-                    value = noteViewState.noteBody,
-                    onValueChange = onChangeNoteContents,
-                )
+            ListItemHeader("Contents")
 
-                Spacer(
-                    modifier =
-                    Modifier
-                        .height(Dimensions.doublePadding)
-                        .fillMaxWidth(),
-                )
-
-                RenderAttachMediaSection(
-                    renderForScreenshot = noteViewState.renderForScreenCapture,
-                    noteViewState = noteViewState,
-                    onAttachNewPhoto = onAttachNewPhoto,
-                    onDeleteAttachment = onDeleteAttachment,
-                )
-
-                Spacer(
-                    modifier =
-                    Modifier
-                        .height(Dimensions.doublePadding)
-                        .fillMaxWidth(),
-                )
-
-                RenderRatingSection(
-                    noteViewState = noteViewState,
-                    onSelectRating = onSelectGrowthStage,
-                )
-
-
-            }
+            TextField(
+                modifier = Modifier.heightIn(min = 80.dp)
+                    .fillMaxWidth(),
+                value = noteViewState.noteBody,
+                onValueChange = onChangeNoteContents,
+            )
 
             Spacer(
                 modifier =
                 Modifier
-                    .height(Dimensions.standardPadding)
+                    .height(Dimensions.doublePadding)
                     .fillMaxWidth(),
             )
 
-            RenderNoteInfoSection(
+            RenderAttachMediaSection(
+                renderForScreenshot = noteViewState.renderForScreenCapture,
                 noteViewState = noteViewState,
-                onRequestToSelectCoordinates = onRequestToSelectNoteLocation,
+                onAttachNewPhoto = onAttachNewPhoto,
+                onDeleteAttachment = onDeleteAttachment,
             )
+
+            Spacer(
+                modifier =
+                Modifier
+                    .height(Dimensions.doublePadding)
+                    .fillMaxWidth(),
+            )
+
+            RenderRatingSection(
+                noteViewState = noteViewState,
+                onSelectRating = onSelectGrowthStage,
+            )
+
+
         }
+
+        Spacer(
+            modifier =
+            Modifier
+                .height(Dimensions.standardPadding)
+                .fillMaxWidth(),
+        )
+
+        RenderNoteInfoSection(
+            noteViewState = noteViewState,
+            onRequestToSelectCoordinates = onRequestToSelectNoteLocation,
+        )
     }
 }
 
@@ -304,14 +325,6 @@ private fun RenderNoteInfoSection(
         )
 
         HorizontalDivider(Modifier.padding(start = Dimensions.standardPadding))
-
-        // overscroll
-        Spacer(
-            modifier =
-            Modifier
-                .height(Dimensions.doublePadding)
-                .fillMaxWidth(),
-        )
     }
 }
 
@@ -423,7 +436,7 @@ fun AddNoteScreenPreview() {
             noteBody = noteBody,
             rating = Rating.THREE_STAR,
             isInEditMode = true,
-            renderForScreenCapture = true,
+            renderForScreenCapture = false,
             coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
             associatedField = null,
             attachments = listOf(

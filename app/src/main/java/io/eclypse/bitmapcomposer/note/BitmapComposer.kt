@@ -46,25 +46,27 @@ class BitmapComposer (
         mainScope.launch {
             // Step 0: Interpret the pixels
             val contentWidthInPixels = (screenDensity.density * width.value).roundToInt()
-            val contentHeightInPixels = (screenDensity.density * (height ?: 5000.dp).value).roundToInt()
+            val contentHeightInPixels =
+                (screenDensity.density * (height ?: 3000.dp).value).roundToInt()
 
             // Step 1: Create a container to hold the ComposeView temporarily
-            val composeViewContainer = FrameLayout(activity).apply {
-                layoutParams = ViewGroup.LayoutParams(contentWidthInPixels, contentHeightInPixels)
+            val container = FrameLayout(activity).apply {
+                layoutParams =
+                    ViewGroup.LayoutParams(contentWidthInPixels, contentHeightInPixels)
                 visibility = View.INVISIBLE // Keep it invisible
             }
 
             // Step 2: Create and configure the ComposeView
-            val childComposeView = ComposeView(activity).apply {
+            val composeView = ComposeView(activity).apply {
                 setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
                 setContent { content() }
             }
 
-            composeViewContainer.addView(childComposeView)
+            container.addView(composeView)
 
             // Step 3: Attach container to the root decor view
             val decorView = activity.window.decorView as ViewGroup
-            decorView.addView(composeViewContainer)
+            decorView.addView(container)
 
             val heightMeasureSpecifications = if (height == null) {
                 View.MeasureSpec.AT_MOST
@@ -74,7 +76,7 @@ class BitmapComposer (
 
             // Step 4: Wait for the ComposeView to be drawn and capture the bitmap
             Handler(Looper.getMainLooper()).post {
-                composeViewContainer.measure(
+                container.measure(
                     View.MeasureSpec.makeMeasureSpec(
                         contentWidthInPixels,
                         View.MeasureSpec.EXACTLY
@@ -85,13 +87,13 @@ class BitmapComposer (
                     )
                 )
 
-                composeViewContainer.layout(0, 0, contentWidthInPixels, contentHeightInPixels)
+                container.layout(0, 0, contentWidthInPixels, contentHeightInPixels)
 
-                val bitmap = childComposeView.drawToBitmap()
+                val bitmap = composeView.drawToBitmap()
                 continuation.resume(bitmap)
 
                 // Step 5: Clean up - remove the container
-                decorView.removeView(composeViewContainer)
+                decorView.removeView(container)
             }
         }
     }
