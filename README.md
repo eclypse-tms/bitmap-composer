@@ -15,7 +15,7 @@ Demonstrates how to convert any composable view in Jetpack into a bitmap image.
 </p>
 
 ## More information
-This is a companion repository for the [How to convert any Composable into an image]() article. Please refer to the blog for more information.
+This is a companion repository for the [How to convert any Composable into an image](https://blog.eclypse.io/how-to-convert-any-composable-into-an-image-11219423742d) article. Please refer to the blog for more information.
 
 
 ## Requirements
