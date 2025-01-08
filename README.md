@@ -11,7 +11,7 @@
 # Convert Composables into Image
 Demonstrates how to convert any composable view in Jetpack into a bitmap image.
 <p align="center">
-	<img width="764.5" height="384" src="./assets/hero_image.jpg">
+	<img src="./assets/hero_image.jpg">
 </p>
 
 ## More information
