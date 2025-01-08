@@ -59,6 +59,7 @@ import io.eclypse.bitmapcomposer.ui.theme.ListItemHeader
 import io.eclypse.bitmapcomposer.ui.theme.ListItemType1
 import io.eclypse.bitmapcomposer.ui.theme.ListItemType2
 import io.eclypse.bitmapcomposer.ui.theme.Purple40
+import io.eclypse.bitmapcomposer.ui.theme.Typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -74,7 +75,7 @@ fun NoteScreen(
     onSelectGrowthStage: (Rating?) -> Unit,
     onAttachNewPhoto: () -> Unit,
     onRequestToSelectNoteLocation: (Coordinate2d?) -> Unit,
-    onShareNote: (Screenshot) -> Unit,
+    onShareNote: (ComposableSnapshot) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -98,7 +99,7 @@ fun NoteScreen(
                     IconButton(
                         onClick = {
                             compositionCoroutineScope.launch {
-                                val screenshot = Screenshot(
+                                val composableSnapshot = ComposableSnapshot(
                                     currentActivity = currentContext as Activity,
                                     screenDensity = screenDensity,
                                     composableView = {
@@ -117,7 +118,7 @@ fun NoteScreen(
                                         }
                                     })
 
-                                onShareNote(screenshot)
+                                onShareNote(composableSnapshot)
                             }
                         },
                     ) {
@@ -167,33 +168,55 @@ private fun NoteContents(
 
         Column(modifier = Modifier.padding(Dimensions.standardPadding)) {
 
-            ListItemHeader("Title")
-            TextField(
-                value = noteViewState.noteTitle,
-                onValueChange = onChangeNoteTitle,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (noteViewState.renderForScreenCapture) {
+                Text(
+                    text = noteViewState.noteTitle,
+                    style = Typography.headlineLarge,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                ListItemHeader("Title")
+                TextField(
+                    value = noteViewState.noteTitle,
+                    onValueChange = onChangeNoteTitle,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             Spacer(
                 modifier = Modifier
                     .height(Dimensions.halfPadding)
             )
 
-            ListItemHeader("Contents")
+            if (noteViewState.renderForScreenCapture) {
+                Text(noteViewState.noteBody,
+                    style = Typography.bodyLarge)
+            } else {
+                ListItemHeader("Contents")
 
-            TextField(
-                modifier = Modifier.heightIn(min = 80.dp)
-                    .fillMaxWidth(),
-                value = noteViewState.noteBody,
-                onValueChange = onChangeNoteContents,
-            )
+                TextField(
+                    modifier = Modifier.heightIn(min = 80.dp)
+                        .fillMaxWidth(),
+                    value = noteViewState.noteBody,
+                    onValueChange = onChangeNoteContents,
+                )
+            }
 
-            Spacer(
-                modifier =
-                Modifier
-                    .height(Dimensions.doublePadding)
-                    .fillMaxWidth(),
-            )
+            if (noteViewState.renderForScreenCapture) {
+                Spacer(
+                    modifier =
+                    Modifier
+                        .height(Dimensions.standardPadding)
+                        .fillMaxWidth(),
+                )
+            } else {
+                Spacer(
+                    modifier =
+                    Modifier
+                        .height(Dimensions.doublePadding)
+                        .fillMaxWidth(),
+                )
+            }
 
             RenderAttachMediaSection(
                 renderForScreenshot = noteViewState.renderForScreenCapture,
@@ -202,12 +225,21 @@ private fun NoteContents(
                 onDeleteAttachment = onDeleteAttachment,
             )
 
-            Spacer(
-                modifier =
-                Modifier
-                    .height(Dimensions.doublePadding)
-                    .fillMaxWidth(),
-            )
+            if (noteViewState.renderForScreenCapture) {
+                Spacer(
+                    modifier =
+                    Modifier
+                        .height(Dimensions.standardPadding)
+                        .fillMaxWidth(),
+                )
+            } else {
+                Spacer(
+                    modifier =
+                    Modifier
+                        .height(Dimensions.doublePadding)
+                        .fillMaxWidth(),
+                )
+            }
 
             RenderRatingSection(
                 noteViewState = noteViewState,
@@ -362,9 +394,16 @@ private fun RenderAttachMediaSection(
     onAttachNewPhoto: () -> Unit,
     onDeleteAttachment: (Int) -> Unit,
 ) {
-    ListItemHeader(
-        text = "Attach Photos",
-    )
+    if (noteViewState.renderForScreenCapture) {
+        ListItemHeader(
+            text = "Attached Photos",
+        )
+    } else {
+        ListItemHeader(
+            text = "Attach Photos",
+        )
+    }
+
 
     val cellSize: GridCells
     val thumbNailModifier: Modifier
@@ -424,9 +463,11 @@ private fun RenderAttachMediaSection(
 
 @Preview(heightDp = 2000)
 @Composable
-fun AddNoteScreenPreview() {
+fun NoteScreenPreview() {
 
-    val noteBody = "The Milky Way is a huge collection of stars, dust and gas."
+    val noteBody = "The Milky Way is a huge collection of stars, dust and gas. It’s called " +
+            "a spiral galaxy because if you could view it from the top or bottom, it would look " +
+            "like a spinning pinwheel"
 
     val previewNote =
         NoteViewState(
@@ -440,14 +481,15 @@ fun AddNoteScreenPreview() {
             coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
             associatedField = null,
             attachments = listOf(
-                ImageReference.ByDrawable(R.drawable.forest),
-                ImageReference.ByDrawable(R.drawable.lotus),
-                ImageReference.ByDrawable(R.drawable.tiles),
+                ImageReference.ByDrawable(R.drawable.milkyway),
+                ImageReference.ByDrawable(R.drawable.pleiades),
+                ImageReference.ByDrawable(R.drawable.lighthouse),
+
             ),
         )
 
     BitmapComposerTheme {
-        NoteScreen(
+        NoteContents(
             noteViewState = previewNote,
             onChangeNoteTitle = {},
             onChangeNoteContents = {},
@@ -455,7 +497,6 @@ fun AddNoteScreenPreview() {
             onSelectGrowthStage = {},
             onAttachNewPhoto = {},
             onRequestToSelectNoteLocation = {},
-            onShareNote = {},
         )
     }
 }

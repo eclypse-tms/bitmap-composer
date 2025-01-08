@@ -113,7 +113,7 @@ private fun PreviewThumbnail() {
         Thumbnail(
             modifier = Modifier.size(200.dp).padding(8.dp),
             index = 0,
-            imageReference = ImageReference.ByDrawable(R.drawable.lotus),
+            imageReference = ImageReference.ByDrawable(R.drawable.pleiades),
             isDeletable = true,
             onDeleteAttachment = { }
         )

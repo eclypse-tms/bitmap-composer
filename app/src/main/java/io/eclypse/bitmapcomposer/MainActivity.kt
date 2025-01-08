@@ -15,7 +15,7 @@ import io.eclypse.bitmapcomposer.note.ImageReference
 import io.eclypse.bitmapcomposer.note.NoteScreen
 import io.eclypse.bitmapcomposer.note.NoteViewState
 import io.eclypse.bitmapcomposer.note.Rating
-import io.eclypse.bitmapcomposer.note.Screenshot
+import io.eclypse.bitmapcomposer.note.ComposableSnapshot
 import io.eclypse.bitmapcomposer.note.ShareNote
 import io.eclypse.bitmapcomposer.ui.theme.BitmapComposerTheme
 import kotlinx.coroutines.CoroutineScope
@@ -50,9 +50,9 @@ class MainActivity : ComponentActivity() {
                 coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
                 associatedField = null,
                 attachments = listOf(
-                    ImageReference.ByDrawable(R.drawable.forest),
-                    ImageReference.ByDrawable(R.drawable.lotus),
-                    ImageReference.ByDrawable(R.drawable.tiles),
+                    ImageReference.ByDrawable(R.drawable.milkyway),
+                    ImageReference.ByDrawable(R.drawable.pleiades),
+                    ImageReference.ByDrawable(R.drawable.lighthouse),
                 ),
             )
 
@@ -79,12 +79,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun process(screenshot: Screenshot) {
+    private suspend fun process(composableSnapshot: ComposableSnapshot) {
         val bitmap = bitmapComposer.composableToBitmap(
-            screenshot.currentActivity,
+            composableSnapshot.currentActivity,
             width = 600.dp,
-            screenDensity = screenshot.screenDensity,
-            content = screenshot.composableView
+            screenDensity = composableSnapshot.screenDensity,
+            content = composableSnapshot.composableView
         )
 
         val shareImageIntent = shareNote.initiateWith(bitmap.asImageBitmap())
@@ -113,9 +113,9 @@ fun MainActivityPreview() {
             coordinate = Coordinate2d(latitude = 33.984818, longitude = -103.65372),
             associatedField = null,
             attachments = listOf(
-                ImageReference.ByDrawable(R.drawable.forest),
-                ImageReference.ByDrawable( R.drawable.lotus),
-                ImageReference.ByDrawable( R.drawable.tiles),
+                ImageReference.ByDrawable(R.drawable.milkyway),
+                ImageReference.ByDrawable(R.drawable.pleiades),
+                ImageReference.ByDrawable(R.drawable.lighthouse),
             ),
         )
 
